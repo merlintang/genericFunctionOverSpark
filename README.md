@@ -1,10 +1,10 @@
 # genericFunctionOverSpark
 generic function searching over big data based on Spark
 
-Given dataset and any function, we can query any query dataset based on SpatialIndex and Effecient searching algorithm
+Given dataset and any function, our system provided following queries based on SpatialIndex and Effecient searching algorithm
 
-### top max 
+### top-K max 
 
-### top min
+### top-K min
 
-### range query searching
+### Range query searching
