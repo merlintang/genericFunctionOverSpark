@@ -1,7 +1,6 @@
-# Generic Function Searching OverSpark
-generic function searching over big data based on Spark
+# Generic Function Searching Over Spark
 
-Given dataset and any function, our system provided following queries based on SpatialIndex and Effecient searching algorithm
+Given dataset and any user define function, our system provided following queries based on SpatialIndex and Effecient searching algorithm
 
 ### top-K max 
 
