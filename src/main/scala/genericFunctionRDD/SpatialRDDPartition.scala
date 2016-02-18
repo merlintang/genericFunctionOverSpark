@@ -13,17 +13,9 @@ abstract class SpatialRDDPartition [K, V] extends Serializable {
 
   def size: Long
 
-  /** Return the value for the given key. */
-  def apply(k: K): Option[V]
-
   def isDefined(k: K): Boolean
 
   def iterator: Iterator[(K, V)]
-
-  /**
-   * Gets the values corresponding to the specified keys, if any. those keys can be the two dimensional object
-   */
-  def multiget(ks: Iterator[K]): Iterator[(K, V)]
 
   /**
    *range search and find points inside the function related value, and each element meet the condition, and return a iterator,

@@ -3,25 +3,25 @@ package genericFunctionRDD.impl
 
 import genericFunctionRDD.SpatialRDDPartition
 import org.apache.spark.Logging
-import spatialindex.Rtree
+import com.newbrightidea.util.RTree
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
  * Created by merlin on 2/9/16.
  */
 class RtreePartition [K, V]
-(protected val tree: Rtree[V])
+(protected val tree: RTree[V])
 (
   override implicit val kTag: ClassTag[K],
   override implicit val vTag: ClassTag[V]
   )
   extends SpatialRDDPartition[K,V] with Logging{
 
+  override def size: Long = tree.size()
 
-  override def size: Long = ???
-
-  override def isDefined(k: K): Boolean = ???
+  override def isDefined(k: K): Boolean = tree==null
 
   /**
    * range search and find points inside the box, and each element meet the condition, and return a iterator,
@@ -35,16 +35,20 @@ class RtreePartition [K, V]
    */
   override def rangefilter(begin: Double, end: Double,f: (K, V) => Double): Iterator[(K, V)] = ???
 
-  /**
-   * Gets the values corresponding to the specified keys, if any. those keys can be the two dimensional object
-   */
-  override def multiget(ks: Iterator[K]): Iterator[(K, V)] = ???
 
-  /** Return the value for the given key. */
-  override def apply(k: K): Option[V] = ???
+  override def iterator: Iterator[(K, V)] =
+  {
+    val nodes=this.tree.iterators()
+    val buffer=new ArrayBuffer[(K,V)]()
 
+    for(i <- 0 to nodes.size())
+    {
+      val n=nodes.get(i)
+      buffer.+=((n.getCorrd.asInstanceOf[K],n.getEntry))
+    }
 
-  override def iterator: Iterator[(K, V)] = ???
+    buffer.toIterator
+  }
 
   /**
    * range search and find points inside the box, and each element meet the condition, and return a iterator,
@@ -65,9 +69,21 @@ private[genericFunctionRDD] object RtreePartition {
   (iter: Iterator[(K, V)], z: (K, U) => V, f: (K, V, U) => V)
   : SpatialRDDPartition[K, V] =
   {
+    val numDimensions: Int = 3
+    val minNum: Int = 32
+    val maxNum: Int = 64
+    val rt: RTree[V] = new RTree[V](minNum, maxNum, numDimensions, RTree.SeedPicker.QUADRATIC)
 
-    val tree = new Rtree(iter)
-    new RtreePartition(tree)
+    iter.foreach
+    {
+      case (k,v)=>
+        k match
+        {
+          case coords: Array[Float]=>
+            rt.insert(coords,v)
+        }
+    }
+    new RtreePartition(rt)
   }
 
 }

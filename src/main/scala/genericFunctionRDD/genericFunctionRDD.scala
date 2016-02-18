@@ -5,15 +5,18 @@ import org.apache.spark.{TaskContext, Partition, OneToOneDependency}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+import impl.RTreePartitioner
+import impl.RtreePartition
+import impl.Util
 
 /**
  * Created by merlin on 2/9/16.
  */
 class genericFunctionRDD[K: ClassTag, V: ClassTag]
 (
-val partitionsRDD: RDD[SpatialRDDPartition[K, V]]
-)
-extends RDD[(K, V)](partitionsRDD.context, List(new OneToOneDependency(partitionsRDD)))
+  val partitionsRDD: RDD[SpatialRDDPartition[K, V]]
+  )
+  extends RDD[(K, V)](partitionsRDD.context, List(new OneToOneDependency(partitionsRDD)))
 {
 
   require(partitionsRDD.partitioner.isDefined)
@@ -101,7 +104,12 @@ object genericFunctionRDD {
   (elems: RDD[(K, V)], z: (K, U) => V, f: (K, V, U) => V)
   : genericFunctionRDD[K, V] = {
 
-    val elemsPartitioned = elems.partitionBy(new RTreePartitioner(500,0.01f,elems))
+    val elemsPartitioned = elems.partitionBy(
+      new RTreePartitioner(
+      Util.numpartition_ForIndexRDD,
+      Util.sample_percentage,
+      elems)
+    )
 
     val partitions = elemsPartitioned.mapPartitions[SpatialRDDPartition[K, V]](
       iter => Iterator(RtreePartition(iter, z, f)),
