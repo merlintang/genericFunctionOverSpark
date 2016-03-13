@@ -2,13 +2,14 @@ package com.newbrightidea.util;
 
 import java.util.LinkedList;
 
-public class Node {
+public class Node implements java.io.Serializable {
 	private static long id_cnt = 0;
 	public final long id;
 	final float[] coords;
 	final float[] dimensions;
 	public LinkedList<Node> children;
 	public final boolean leaf;
+	private static final long serialVersionUID = 7526721295622776147L;
 
 	private double[] MBR_S = null;
 	private double[] MBR_T = null;

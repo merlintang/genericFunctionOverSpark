@@ -62,12 +62,17 @@ class genericFunctionRDD[K: ClassTag, V: ClassTag]
   }
 
   /**
-   *
-   * @param k and related functions
+   * get the smallest value for related udf and udf deritative
+   * @param UDF: uder define function i.e., x1*x2*x3
+   * @param DERUDF: use calculate user deriative function i.e., d(f)/d(x1)=x2x3, d(f)/d(x2)=x1x3
    */
-  def topMin(k:Int,f: (K, V) => Double): Unit =
+  def getSmallest(UDF:String, DERUDF:Array[String]): Float =
   {
+    val  localsmalles=partitionsRDD.map(_.getSmallest(UDF,DERUDF)).collect()
 
+    //println("local min results ")
+    //localsmalles.foreach(println)
+    localsmalles.sorted.head
   }
 
   /**
@@ -105,10 +110,7 @@ object genericFunctionRDD {
   : genericFunctionRDD[K, V] = {
 
     val elemsPartitioned = elems.partitionBy(
-      new RTreePartitioner(
-      Util.numpartition_ForIndexRDD,
-      Util.sample_percentage,
-      elems)
+      new RTreePartitioner(Util.numpartition_ForIndexRDD, Util.sample_percentage, elems)
     )
 
     val partitions = elemsPartitioned.mapPartitions[SpatialRDDPartition[K, V]](

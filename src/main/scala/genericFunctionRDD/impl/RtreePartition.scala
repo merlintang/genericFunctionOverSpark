@@ -57,6 +57,17 @@ class RtreePartition [K, V]
   override def topMax(k: Int,f: (K, V) => Double): Iterator[(K, V)] = ???
 
 
+  /**
+   *
+   * @param UDF
+   * @param DERUDF
+   * @return
+   */
+  def getSmallest(UDF:String, DERUDF:Array[String]):Float=
+  {
+    this.tree.getSmallest(UDF,DERUDF)
+  }
+
 }
 
 private[genericFunctionRDD] object RtreePartition {
@@ -69,9 +80,10 @@ private[genericFunctionRDD] object RtreePartition {
   (iter: Iterator[(K, V)], z: (K, U) => V, f: (K, V, U) => V)
   : SpatialRDDPartition[K, V] =
   {
-    val numDimensions: Int = 3
-    val minNum: Int = 32
-    val maxNum: Int = 64
+    val numDimensions: Int = Util.input_data_dimensions
+    val minNum: Int = Util.localrtree_min_number
+    val maxNum: Int = Util.localrtree_max_number
+
     val rt: RTree[V] = new RTree[V](minNum, maxNum, numDimensions, RTree.SeedPicker.QUADRATIC)
 
     iter.foreach

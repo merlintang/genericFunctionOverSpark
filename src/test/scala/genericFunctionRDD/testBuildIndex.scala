@@ -1,33 +1,49 @@
 package genericFunctionRDD
 
 import org.apache.spark.{SparkContext, SparkConf}
-import org.scalatest.{Matchers, FunSpec}
+import org.scalatest.{FunSuite}
+import scala.util.Random._
+
 
 /**
  * Created by merlin on 2/17/16.
  */
-class testBuildIndex extends FunSpec with Matchers {
+class testBuildIndex extends FunSuite {
 
-  describe("test build the tree dimensional index over rdd") {
+  test("test build high dimensional r-tree index over rdd") {
 
-    val conf = new SparkConf().setAppName("Test for Spark SpatialRDD").setMaster("local[2]")
+    val conf = new SparkConf().setAppName("Test for Spark GenericRDD").setMaster("local[2]")
 
     val spark = new SparkContext(conf)
 
-    val datapoints=Array{
-      (0.1f,0.2f,0.3f);(0.3f,0.5f,0.6f);
-      (1.1f,0.2f,0.3f);(0.3f,4.5f,55.6f);
-      (3.1f,4.2f,1.3f);(110.3f,0.5f,2.6f);
-      (4.1f,5.2f,2.3f);(2.3f,3.5f,44.6f)
-    }
+    def uniformPoint():Array[Float]=
+      Array(nextFloat, nextFloat,nextFloat)
 
-    val inputRDD=spark.parallelize(datapoints,2).map{
+    val numofpoints=10000
+
+    val dataset = (1 to numofpoints).map(n => uniformPoint())
+
+    val inputRDD=spark.parallelize(dataset,4).map{
       case pt=>(pt,1)
     }
 
+    val min=inputRDD.map
+    {
+      case f=> val arr=f._1
+        arr.foldLeft(1f)((m, n) => m*n)
+    }.min()
+
+    println("naive min value "+min)
+
     val genericRDD=genericFunctionRDD(inputRDD)
 
-    println(genericRDD.count())
+    //println("total size "+genericRDD.count())
+    //assert(genericRDD.count()==datapoints.length)
+
+    val udf="x1*x2*x3"
+    val defudf=Array("x2*x3", "x1*x3","x1*x2")
+
+    println("min "+genericRDD.getSmallest(udf,defudf))
 
   }
 

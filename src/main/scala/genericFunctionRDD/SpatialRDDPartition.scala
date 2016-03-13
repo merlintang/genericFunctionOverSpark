@@ -35,5 +35,8 @@ abstract class SpatialRDDPartition [K, V] extends Serializable {
   def topMax(k:Int,f: (K, V) => Double):Iterator[(K,V)]
 
 
+  def getSmallest(UDF:String, DERUDF:Array[String]):Float
+
+
 }
 

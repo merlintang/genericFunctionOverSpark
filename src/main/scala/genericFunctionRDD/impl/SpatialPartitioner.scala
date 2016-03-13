@@ -17,7 +17,7 @@ class RTreePartitioner [K: ClassTag,V:ClassTag](partitions:Int, fraction:Float,
 
   val rtreeForPartition={
     //sample data from big data set
-    var sampledata=rdd.map(_._1).sample(false,fraction).collect()
+    val sampledata=rdd.map(_._1).sample(false,fraction).collect()
 
     val numDimensions: Int = Util.input_data_dimensions
     val minNum: Int = Util.rtree_minimum_number
@@ -46,7 +46,10 @@ class RTreePartitioner [K: ClassTag,V:ClassTag](partitions:Int, fraction:Float,
     key match
     {
       case k:Array[Float]=>
-        this.rtreeForPartition.getPartitionID(k)
+        (this.rtreeForPartition.getPartitionID(k))%this.numPartitions
+      case _=>
+        1
+        //Array(k)
     }
   }
 

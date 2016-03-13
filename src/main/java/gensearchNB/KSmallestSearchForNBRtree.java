@@ -102,7 +102,7 @@ public class KSmallestSearchForNBRtree {
 	}
 
 	//RTree.Node
-	private static Node searchSmallest(
+	public static Node searchSmallest(
 			Expression udf, Expression[] dudfs,
 			LinkedList<Node> activeNodes,Stack<LinkedList<Node>> prunedNodes
 		) {
@@ -217,7 +217,7 @@ public class KSmallestSearchForNBRtree {
 		}
 	}
 
-	private static double applyUdf(Expression udf, Node leafNode) {
+	public static double applyUdf(Expression udf, Node leafNode) {
 		if(nodeCache.containsKey(leafNode.id)){
 			cache_hits++;
 			return nodeCache.get(leafNode.id)[0];

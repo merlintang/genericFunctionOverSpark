@@ -1,7 +1,9 @@
 package com.newbrightidea.util;
 
 import java.util.*;
-
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import gensearchNB.KSmallestSearchForNBRtree;
 /**
  * Implementation of an arbitrary-dimension RTree. Based on R-Trees: A Dynamic
  * Index Structure for Spatial Searching (Antonn Guttmann, 1984)
@@ -14,9 +16,11 @@ import java.util.*;
  * @param <T>
  *          the type of entry to store in this RTree.
  */
-public class RTree<T>
+public class RTree<T> implements java.io.Serializable
 {
   public enum SeedPicker { LINEAR, QUADRATIC }
+
+  private static final long serialVersionUID = 7526472295622776147L;
 
   private final int maxEntries;
   private final int minEntries;
@@ -113,6 +117,30 @@ public class RTree<T>
     return size;
   }
 
+    public float getSmallest(String udfstr, String[] dudfstrs) {
+
+        if(this.size==0)
+            return Float.MAX_VALUE;
+
+        String[] vars = new String[numDims];
+        for (int i = 0; i < numDims; i++) {
+            vars[i] = "x" + (i + 1);
+        }
+
+        Expression udf = new ExpressionBuilder(udfstr).variables(vars).build();
+        Expression[] dudfs = new Expression[numDims];
+        for (int i = 0; i < numDims; i++) {
+            dudfs[i] = new ExpressionBuilder(dudfstrs[i]).variables(vars).build();
+        }
+
+        LinkedList<Node> activeNodes = new LinkedList<Node>();
+        activeNodes.add(this.getRoot());
+        Stack<LinkedList<Node>> prunedNodes = new Stack<LinkedList<Node>>();
+        Node minNode = KSmallestSearchForNBRtree.searchSmallest(udf, dudfs, activeNodes, prunedNodes);
+
+        return (float) KSmallestSearchForNBRtree.applyUdf(udf, minNode);
+    }
+
   /**
    * Searches the RTree for objects overlapping with the given rectangle.
    * 
@@ -135,6 +163,8 @@ public class RTree<T>
 
   public int getPartitionID(float[] coords)
   {
+      if(this.size==0)
+          return 0;
     //assert (coords.length == this.numDims);
     List<Node> nodes=searchLeavesForPt(coords);
 
